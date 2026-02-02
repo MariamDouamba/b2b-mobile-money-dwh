@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Data Warehouse
+  postgres-dwh:
+    image: postgres:15-alpine
+    container_name: b2b_dwh
+    environment:
+      POSTGRES_DB: b2b_mobile_money_dwh
+      POSTGRES_USER: dwh_admin
+      POSTGRES_PASSWORD: dwh_secure_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+      - ./data/dwh:/backup
+    networks:
+      - b2b_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dwh_admin -d b2b_mobile_money_dwh"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PgAdmin pour la gestion de la base
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: b2b_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@b2b-dwh.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - b2b_network
+    depends_on:
+      - postgres-dwh
+
+  # Jupyter pour l'analyse et le ML
+  jupyter:
+    image: jupyter/scipy-notebook:latest
+    container_name: b2b_jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/work
+      - ./src:/home/jovyan/src
+      - ./data:/home/jovyan/data
+    environment:
+      JUPYTER_ENABLE_LAB: "yes"
+      GRANT_SUDO: "yes"
+    networks:
+      - b2b_network
+    command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
+
+  # Metabase pour la visualisation (alternative à Power BI)
+  metabase:
+    image: metabase/metabase:latest
+    container_name: b2b_metabase
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: dwh_admin
+      MB_DB_PASS: dwh_secure_password
+      MB_DB_HOST: postgres-dwh
+    networks:
+      - b2b_network
+    depends_on:
+      - postgres-dwh
+    volumes:
+      - metabase_data:/metabase-data
+
+  # Airflow pour l'orchestration ETL (optionnel)
+  # airflow-webserver:
+  #   image: apache/airflow:2.7.3-python3.11
+  #   container_name: b2b_airflow
+  #   environment:
+  #     - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+  #     - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://dwh_admin:dwh_secure_password@postgres-dwh/airflow
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - b2b_network
+  #   depends_on:
+  #     - postgres-dwh
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  metabase_data:
+    driver: local
+
+networks:
+  b2b_network:
+    driver: bridge

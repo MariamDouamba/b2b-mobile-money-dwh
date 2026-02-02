@@ -1,0 +1,86 @@
+graph TB
+    subgraph "SOURCES DE DONNÉES"
+        A[Données Synthétiques<br/>3M+ Clients B2B<br/>Transactions Quotidiennes]
+        B[Patterns de Fraude<br/>Comportements Réalistes]
+    end
+
+    subgraph "COUCHE ETL - Python"
+        C[Extract<br/>Lecture CSV/Parquet]
+        D[Transform<br/>Nettoyage & Validation<br/>Feature Engineering]
+        E[Load<br/>Insertion DWH]
+    end
+
+    subgraph "DATA WAREHOUSE - PostgreSQL"
+        F[(Staging Schema<br/>stg_transactions)]
+        
+        subgraph "Star Schema"
+            G[dim_client<br/>Entreprises B2B]
+            H[dim_service<br/>Types Services]
+            I[dim_date<br/>Calendrier]
+            J[fact_transactions<br/>Transactions<br/>Mesures KPIs]
+            K[dim_status<br/>Statuts]
+            L[dim_channel<br/>Canaux]
+        end
+        
+        M[fact_daily_summary<br/>Agrégations]
+        N[Vues Analytiques<br/>v_kpi_overview<br/>v_rfm_segmentation]
+    end
+
+    subgraph "COUCHE ANALYTIQUE - Python ML"
+        O[Segmentation RFM<br/>K-Means Clustering<br/>5 Segments Clients]
+        P[Détection Fraude<br/>XGBoost<br/>92% Précision]
+        Q[Feature Engineering<br/>15+ Features]
+    end
+
+    subgraph "COUCHE PRÉSENTATION"
+        R[Power BI Desktop<br/>Tableaux de Bord KPIs]
+        S[Metabase<br/>Visualisation Web]
+        T[Jupyter Notebooks<br/>Analyses Ad-Hoc]
+    end
+
+    subgraph "ORCHESTRATION"
+        U[Docker Compose<br/>Infrastructure]
+        V[Scripts ETL<br/>Automatisation]
+    end
+
+    A --> C
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> J
+    
+    G --> J
+    H --> J
+    I --> J
+    K --> J
+    L --> J
+    
+    J --> M
+    J --> N
+    M --> N
+    
+    N --> O
+    N --> P
+    J --> Q
+    Q --> P
+    
+    N --> R
+    N --> S
+    N --> T
+    
+    U -.-> F
+    V -.-> E
+
+    style A fill:#e1f5ff
+    style B fill:#e1f5ff
+    style J fill:#ffe1e1
+    style P fill:#e1ffe1
+    style R fill:#fff4e1
+    style S fill:#fff4e1
+    style T fill:#fff4e1
+    
+    classDef source fill:#e1f5ff,stroke:#0066cc,stroke-width:2px
+    classDef dwh fill:#ffe1e1,stroke:#cc0000,stroke-width:2px
+    classDef ml fill:#e1ffe1,stroke:#00cc00,stroke-width:2px
+    classDef viz fill:#fff4e1,stroke:#cc9900,stroke-width:2px
