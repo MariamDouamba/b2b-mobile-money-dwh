@@ -290,10 +290,11 @@ make db-info
 
 ## 📞 Contact
 
-**Auteur**: Votre Nom  
-**LinkedIn**: [votre-profil](https://linkedin.com/in/votre-profil)  
-**GitHub**: [@votre-username](https://github.com/votre-username)  
-**Email**: votre.email@example.com
+**Auteur**: Mariam DOUAMBA 
+
+**LinkedIn**: [Mariam Douamba](https://linkedin.com/in/mariam-douamba-a1876915a/)  
+**GitHub**: [@MariamDouamba](https://github.com/mariamdouamba)  
+**Email**: myriam.douamba@gmail.com
 
 ## 📄 License
 
