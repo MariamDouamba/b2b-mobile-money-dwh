@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Data Warehouse
   postgres-dwh:
@@ -58,6 +56,26 @@ services:
       - b2b_network
     command: start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''
 
+  # Marimo - Notebook Python réactif moderne
+  marimo:
+    build:
+      context: ./docker/marimo
+      dockerfile: Dockerfile
+    container_name: b2b_marimo
+    ports:
+      - "2718:2718"
+    volumes:
+      - ./notebooks/marimo:/app/notebooks
+      - ./src:/app/src
+      - ./data:/app/data
+    environment:
+      DATABASE_URL: postgresql://dwh_admin:dwh_secure_password@postgres-dwh:5432/b2b_mobile_money_dwh
+    networks:
+      - b2b_network
+    depends_on:
+      postgres-dwh:
+        condition: service_healthy
+
   # Metabase pour la visualisation (alternative à Power BI)
   metabase:
     image: metabase/metabase:latest
@@ -74,7 +92,8 @@ services:
     networks:
       - b2b_network
     depends_on:
-      - postgres-dwh
+      postgres-dwh:
+        condition: service_healthy
     volumes:
       - metabase_data:/metabase-data
 

@@ -285,32 +285,32 @@ FROM client_metrics;
 CREATE OR REPLACE FUNCTION dwh.populate_dim_date(start_date DATE, end_date DATE)
 RETURNS void AS $$
 DECLARE
-    current_date DATE := start_date;
+    loop_date DATE := start_date;
 BEGIN
-    WHILE current_date <= end_date LOOP
+    WHILE loop_date <= end_date LOOP
         INSERT INTO dwh.dim_date (
             full_date, day_of_week, day_name, day_of_month, day_of_year,
             week_of_year, month_number, month_name, quarter, year,
             is_weekend, fiscal_year, fiscal_quarter
         )
         VALUES (
-            current_date,
-            EXTRACT(DOW FROM current_date),
-            TO_CHAR(current_date, 'Day'),
-            EXTRACT(DAY FROM current_date),
-            EXTRACT(DOY FROM current_date),
-            EXTRACT(WEEK FROM current_date),
-            EXTRACT(MONTH FROM current_date),
-            TO_CHAR(current_date, 'Month'),
-            EXTRACT(QUARTER FROM current_date),
-            EXTRACT(YEAR FROM current_date),
-            EXTRACT(DOW FROM current_date) IN (0, 6),
-            EXTRACT(YEAR FROM current_date),
-            EXTRACT(QUARTER FROM current_date)
+            loop_date,
+            EXTRACT(DOW FROM loop_date),
+            TO_CHAR(loop_date, 'Day'),
+            EXTRACT(DAY FROM loop_date),
+            EXTRACT(DOY FROM loop_date),
+            EXTRACT(WEEK FROM loop_date),
+            EXTRACT(MONTH FROM loop_date),
+            TO_CHAR(loop_date, 'Month'),
+            EXTRACT(QUARTER FROM loop_date),
+            EXTRACT(YEAR FROM loop_date),
+            EXTRACT(DOW FROM loop_date) IN (0, 6),
+            EXTRACT(YEAR FROM loop_date),
+            EXTRACT(QUARTER FROM loop_date)
         )
         ON CONFLICT (full_date) DO NOTHING;
-        
-        current_date := current_date + INTERVAL '1 day';
+
+        loop_date := loop_date + INTERVAL '1 day';
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
